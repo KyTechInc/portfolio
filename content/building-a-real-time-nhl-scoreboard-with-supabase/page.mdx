@@ -1,0 +1,289 @@
+
+import { Code } from '@/components/code-editor'
+import scoreBoard from './score-board.webp'
+import realtimeOn from './realtime-on.webp'
+import { ArticleLayout } from '@/components/ArticleLAyout'
+export const article = {
+  title: "Building a Real-Time NHL Scoreboard with Supabase",
+  date: "2024-12-11",
+  author: "Kyle McCracken",
+  description: "Learn how to implement real-time sports updates using Supabase's Realtime feature, creating an efficient and scalable solution for live scoreboard updates.",
+  coverImage: scoreBoard,
+  slug: 'building-a-real-time-nhl-scoreboard-with-supabase',
+  coverImagePath: 'https://media.kytech.ca/blog/score-board.webp',
+  icon: 'supabase.com'
+}
+
+
+export const metadata = {
+  title: article.title,
+  description: article.description,
+}
+
+export default (props) => <ArticleLayout article={article} {...props} />
+
+Ever wondered how to build a live-updating sports scoreboard without hammering your API with constant requests?
+
+<Image src={'https://media.kytech.ca/blog/score-board.webp'} alt="Score board" />
+
+I faced this exact challenge while developing [Benchwarmers](https://benchwarmers.app). The solution I found was surprisingly elegant and efficient, using Supabase's real-time functionality in a way that might not be immediately obvious from the docs.
+
+## The Challenge 🏒
+
+Building a real-time scoreboard for NHL games presented three key requirements:
+
+1. Fetching current scores for all NHL games
+2. Updating scores in real-time as games progress
+3. Displaying the data in an engaging way
+
+The first requirement was straightforward - the NHL API's Boxscore endpoint provides comprehensive game data. The visual presentation was handled beautifully by my UI stack (NextJS + Tailwind + Shadcn/UI + Framer Motion). But the real challenge lay in that middle requirement: real-time updates.
+
+## Exploring the Options
+
+Initially, I considered several traditional approaches:
+
+- **Polling intervals**: Regularly fetching data every few seconds
+- **Cron jobs**: Scheduled server-side updates
+- **Webhook systems**: Listening for external triggers
+
+Each of these solutions had significant drawbacks:
+- Polling creates unnecessary server load
+- Cron jobs might miss rapid updates
+- Webhooks require complex setup and maintenance
+
+That's when I discovered that Supabase's Realtime feature could be used for more than just chat applications. In fact, it took just 15 minutes to implement real-time synchronization between my Postgres database and frontend!
+
+## Setting Up Supabase Realtime
+
+Let's walk through the implementation step by step.
+
+### 1. Database Configuration
+
+First, you'll need to set up your Supabase database properly. Here's what you need:
+
+1. Create a table in your database (I used a custom schema called `gamecenter`)
+2. Enable Realtime for your table in the Supabase dashboard
+3. Ensure your schema is exposed in your REST API configuration
+  
+<Code
+    code={`
+    CREATE TABLE gamecenter.game_boxscore (
+      game_id TEXT PRIMARY KEY,
+      home_team_score INTEGER,
+      away_team_score INTEGER,
+      period INTEGER,
+      time_remaining TEXT,
+      game_state TEXT,
+      last_updated TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+    );
+    `}
+  filename="game_boxscore.sql"
+  language="sql"
+  lineNumbers={false}
+/>
+
+
+### Enable Realtime in Supabase Dashboard
+
+Navigate to your table settings in the Supabase dashboard and enable Realtime:
+	1.	Go to Database → Tables
+	2.	Select your table
+	3.	Click on "Enable Realtime"
+This creates the necessary Postgres publication under the hood.
+
+### 3. Understanding Realtime Mechanisms
+
+Supabase's Realtime functionality offers three distinct modes:
+
+1. Broadcast: Send ephemeral messages between clients
+2. Presence: Track and sync shared state
+3. Postgres Changes: Listen to database changes
+For our scoreboard, we're using Postgres Changes, which leverages Postgres' native replication system. This means:
+	•	Changes are propagated instantly
+	•	No additional infrastructure needed
+	•	Built-in security through Postgres' Row Level Security (RLS)
+
+### Implementation Structure
+
+Here's how I organized the code in my Next.js application:
+
+<Code
+    code={`
+
+├── app                         
+│    ├── scores                     
+│       ├── [game_id]           # Dynamic route for individual games
+│       │    ├── page.tsx       # Server Component (initial data fetch)
+│       │    ├── boxscore.tsx   # Client Component (realtime updates)
+│       │    ├── types.ts       # Type definitions
+`}
+  filename="Structure"
+  language="sh"
+  lineNumbers={true}
+/>
+
+
+### Fetching Initial Data
+
+First, let's set up our server component to fetch the initial state:
+<Code
+    code={`export default async function GamePage({ params }: { params: { game_id: string } }) {
+  const supabase = createServerComponentClient<Database>()
+  
+  // Fetch initial data with no caching
+  const [boxscoreData, gameLogData] = await Promise.all([
+    supabase.schema('gamecenter')
+      .from('game_boxscore')
+      .select('*')
+      .eq('game_id', params.game_id)
+      .limit(1),
+    supabase.schema('gamecenter')
+      .from('game_events')
+      .select('*')
+      .eq('game_id', params.game_id)
+      .in('type_code', ['503', '509', '505', '520', '521', '506', '507'])
+      .order('time_remaining', { ascending: true }),
+  ])
+
+  return (
+    <Boxscore 
+      initialBoxscore={boxscoreData.data?.[0]} 
+      initialGameLog={gameLogData.data}
+      game_id={params.game_id}
+    />
+  )
+}
+`}
+  filename="page.tsx"
+  language="tsx"
+  lineNumbers={true}
+/>
+
+
+
+### Setting Up Real-Time Subscription
+
+Now, let's implement the client component that handles real-time updates:
+
+<Code
+    code={`
+// boxscore.tsx
+export default function Boxscore({ 
+  initialBoxscore, 
+  initialGameLog, 
+  game_id 
+}: BoxscoreProps) {
+  const [boxscore_live, setBoxscore_live] = useState(initialBoxscore)
+  const supabase = createClientComponentClient<Database>()
+
+  useEffect(() => {
+    // Create a realtime channel
+    const boxscoreChannel = supabase.channel('game-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',  // Listen to all events
+          schema: 'gamecenter',
+          table: 'game_boxscore',
+          filter: \`game_id=eq.\${game_id}\`
+        },
+        (payload) => {
+          console.log('Boxscore update:', payload)
+          setBoxscore_live(payload.new as Database['gamecenter']['Tables']['game_boxscore']['Row'])
+        }
+      )
+      .subscribe()
+
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(boxscoreChannel)
+    }
+  }, [supabase, game_id])
+
+  // Render your UI using boxscore_live
+  return (
+    <div>
+      {/* Your scoreboard UI components */}
+    </div>
+  )
+}
+`}
+  filename="boxscore.tsx"
+  language="tsx"
+  lineNumbers={true}
+/>
+
+
+### Important Considerations
+
+- Channel Management:
+	- Channel names ('game-updates') should be unique per subscription type
+	- Consider using dynamic channel names for multiple game subscriptions
+
+### Event Filtering:
+
+<Code
+    code={`
+event: '*'  // Listens to INSERT, UPDATE, DELETE
+// Or specific events:
+event: 'UPDATE'  // Only listen to updates
+`}
+  filename="boxscore.tsx"
+  language="tsx"
+  lineNumbers={false}
+  themes={{light: "one-light", dark: "github-dark"}}
+/>
+
+### Performance Optimization:
+	- Always implement cleanup functions
+	- Use appropriate filters to minimize unnecessary updates
+	- Consider batching updates if dealing with high-frequency changes
+
+### Error Handling:
+<Code
+    code={`
+.on('error', (error) => {
+  console.error('Realtime subscription error:', error)
+  // Implement retry logic if needed
+})
+`}
+  filename="boxscore.tsx"
+  language="tsx"
+  lineNumbers={true}
+/>
+
+The Result
+The final implementation provides:
+	•	Instant score updates without polling
+	•	Efficient resource usage
+	•	Clean, maintainable code
+	•	Excellent user experience
+
+<Video 
+src="https://data.benchwarmers.app/media/realtime_boxscore%201.mp4"
+poster="/score-board.webp"
+autoPlay
+loop
+muted
+controls
+/>
+
+## Conclusion
+
+What started as a challenging requirement for real-time sports updates turned into an elegant solution using Supabase Realtime. Instead of complex polling mechanisms or inefficient API calls, we now have a robust, scalable system that:
+
+- Updates scores in real-time
+- Uses minimal server resources
+- Maintains clean, readable code
+- Provides an excellent user experience
+
+The best part? This pattern isn't limited to sports scores. You can apply this same approach to:
+
+- Live dashboards
+- Real-time analytics
+- Collaborative features
+- Any data that needs instant updates
+
+Remember to consider your specific use case when implementing real-time features. While this solution worked perfectly for my sports scoreboard, you might need to adjust the approach based on your update frequency, data volume, and user requirements.
+
+Give it a try in your next project - you might be surprised at how simple real-time features can be with Supabase! 🚀
