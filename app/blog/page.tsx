@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { Section } from '@/components/Section'
 import { Suspense } from 'react'
 import { Container } from '@/components/container'
+import { generateMetadata, generateStructuredData, SITE_CONFIG } from '@/lib/metadata'
 
 
 function Article({ article }: { article: ArticleWithSlug }) {
@@ -72,30 +73,58 @@ function Article({ article }: { article: ArticleWithSlug }) {
   )
 }
 
-export const metadata: Metadata = {
-  title: 'Articles',
-  description:
-    'All of my long-form thoughts on programming, leadership, product design, and more, collected in chronological order.',
-}
+export const metadata: Metadata = generateMetadata({
+  title: `${SITE_CONFIG.name} - Blog & Articles`,
+  description: 'Explore my latest thoughts on web development, programming, technology, and software engineering. Discover tutorials, insights, and deep dives into modern web development practices.',
+  path: '/blog',
+  type: 'website',
+  tags: [
+    'Blog',
+    'Articles',
+    'Web Development',
+    'Programming',
+    'Technology',
+    'Tutorials',
+    'Software Engineering',
+    'JavaScript',
+    'React',
+    'Next.js',
+    'TypeScript'
+  ]
+});
 
 export default async function ArticlesIndex() {
   const articles = await getAllArticles()
 
+  const structuredData = generateStructuredData('WebSite', {
+    name: 'Blog',
+    description: 'Technical blog covering web development, programming, and software engineering topics.',
+    url: `${SITE_CONFIG.url}/blog`
+  });
+
   return (
-    <Section className="pt-6 sm:pt-8">
-      <Container className="flex flex-col items-center gap-3 sm:gap-4 mx-auto w-full">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-mono">Blog</h1>
-        <p className="text-sm sm:text-base text-muted-foreground text-center max-w-2xl px-4">All of my long-form thoughts on programming, leadership, product design, and more, collected in chronological order.</p>
-        <div className="w-full">
-          <dl className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 w-full">
-            <Suspense fallback={<div className="col-span-full text-center py-8">Loading...</div>}>
-              {articles.map((article) => (
-                <Article key={article.slug} article={article} />
-              ))}
-            </Suspense>
-          </dl>
-        </div>
-      </Container>
-    </Section>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData)
+        }}
+      />
+      <Section className="pt-6 sm:pt-8">
+        <Container className="flex flex-col items-center gap-3 sm:gap-4 mx-auto w-full">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-mono">Blog</h1>
+          <p className="text-sm sm:text-base text-muted-foreground text-center max-w-2xl px-4">All of my long-form thoughts on programming, leadership, product design, and more, collected in chronological order.</p>
+          <div className="w-full">
+            <dl className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 w-full">
+              <Suspense fallback={<div className="col-span-full text-center py-8">Loading...</div>}>
+                {articles.map((article) => (
+                  <Article key={article.slug} article={article} />
+                ))}
+              </Suspense>
+            </dl>
+          </div>
+        </Container>
+      </Section>
+    </>
   )
 }
