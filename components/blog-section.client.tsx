@@ -18,7 +18,7 @@ export default function BlogSectionClient({ articles }: { articles: Article[] })
   return (
     <>
       {/* Left panel - Cover Image */}
-      <div className="relative bg-dashed p-8 h-full min-h-[300px]">
+      <div className="relative bg-dashed p-4 sm:p-6 lg:p-8 h-full min-h-[250px] sm:min-h-[300px]">
         {articles.map((article, index) => (
           article.coverImage && (
             <div
@@ -47,13 +47,12 @@ export default function BlogSectionClient({ articles }: { articles: Article[] })
           <Link
             key={article.slug}
             className={cn(
-              'flex flex-col gap-2 p-8 transition-colors hover:bg-background',
+              'flex flex-col gap-2 p-4 sm:p-6 lg:p-8 transition-colors hover:bg-background',
               index > 0 && 'border-t',
               `has-[~.hover-trigger-${article.slug}]:hover:opacity-100`,
             )}
             href={`/blog/${article.slug}`}
             onMouseEnter={() => {
-              // biome-ignore lint/complexity/noForEach: <explanation>
               document.querySelectorAll('[class*="hover-trigger-"]').forEach((el) => {
                 el.classList.remove('opacity-100');
               });
@@ -62,7 +61,6 @@ export default function BlogSectionClient({ articles }: { articles: Article[] })
                 ?.classList.add('opacity-100');
             }}
             onMouseLeave={() => {
-              // biome-ignore lint/complexity/noForEach: <explanation>
               document.querySelectorAll('[class*="hover-trigger-"]').forEach((el) => {
                 el.classList.remove('opacity-100');
               });
@@ -71,15 +69,15 @@ export default function BlogSectionClient({ articles }: { articles: Article[] })
                 ?.classList.add('opacity-100');
             }}
           >
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <CalendarIcon size={14} />
+            <div className="flex items-center gap-1.5 sm:gap-2 text-muted-foreground text-xs sm:text-sm">
+              <CalendarIcon size={12} className="sm:w-[14px] sm:h-[14px]" />
               <time dateTime={article.date}>{formatDate(article.date)}</time>
             </div>
             <div>
-              <h3 className="font-semibold text-xl tracking-tight text-foreground group-hover/item:text-primary">
+              <h3 className="font-semibold text-lg sm:text-xl tracking-tight text-foreground group-hover/item:text-primary">
                 {article.title}
               </h3>
-              <p className="text-muted-foreground text-sm line-clamp-2 mt-1">
+              <p className="text-muted-foreground text-xs sm:text-sm line-clamp-2 mt-1">
                 {article.description}
               </p>
             </div>

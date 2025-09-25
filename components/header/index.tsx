@@ -9,7 +9,7 @@ import { MobileMenu } from './mobile-menu';
 import { ThemeSwitcher } from '../theme-switcher';
 
 export const Header = () => (
-  <HeaderProvider className="container fixed top-0 right-0 left-0 z-50 mx-auto flex items-center justify-between border bg-backdrop/90 px-4 py-2 backdrop-blur-md transition-all sm:py-4">
+  <HeaderProvider className="container fixed top-0 right-0 left-0 z-50 mx-auto flex items-center justify-between border bg-card/90 px-4 py-2 backdrop-blur-md transition-all sm:py-4">
     <div className="w-32">
       <ViewAnimation
         initial={{ opacity: 0, translateY: -8 }}

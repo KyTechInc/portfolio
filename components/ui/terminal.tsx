@@ -1,3 +1,5 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: Complex animation dependencies */
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: Required for terminal sequence animation */
 "use client"
 
 import {
@@ -9,7 +11,8 @@ import {
   useRef,
   useState,
 } from "react"
-import { motion, MotionProps, useInView } from "motion/react"
+import { motion, useInView } from "motion/react"
+import type { MotionProps } from "motion/react"
 
 import { cn } from "@/lib/utils"
 
@@ -228,19 +231,21 @@ export const Terminal = ({
     <div
       ref={containerRef}
       className={cn(
-        "border-border bg-background z-0 h-full max-h-[400px] w-full max-w-lg rounded-xl border",
+        "border-border bg-background z-0 h-full max-h-[400px] sm:max-h-[500px] md:max-h-[600px] w-full rounded-xl border overflow-hidden",
         className
       )}
     >
-      <div className="border-border flex flex-col gap-y-2 border-b p-4">
-        <div className="flex flex-row gap-x-2">
-          <div className="h-2 w-2 rounded-full bg-red-500"></div>
-          <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-          <div className="h-2 w-2 rounded-full bg-green-500"></div>
+      <div className="border-border flex flex-col gap-y-1 sm:gap-y-2 border-b p-2 sm:p-3 md:p-4">
+        <div className="flex flex-row gap-x-1 sm:gap-x-2">
+          <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-red-500"></div>
+          <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-yellow-500"></div>
+          <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-green-500"></div>
         </div>
       </div>
-      <pre className="p-4">
-        <code className="grid gap-y-1 overflow-auto">{wrappedChildren}</code>
+      <pre className="p-2 sm:p-3 md:p-4 overflow-hidden">
+        <code className="grid gap-y-0.5 sm:gap-y-1 overflow-hidden whitespace-pre-wrap break-words max-w-full text-[10px] xs:text-xs sm:text-sm leading-relaxed">
+          {wrappedChildren}
+        </code>
       </pre>
     </div>
   )

@@ -18,7 +18,7 @@ export const MobileMenu = () => {
       </Button>
       <div
         className={cn(
-          'fixed top-[53px] right-0 left-0 flex h-[20rem] border-b border-border/50 rounded-b-xl w-full flex-col gap-4 bg-background/95 backdrop-blur-sm p-4 md:p-8',
+          'fixed top-[53px] right-0 left-0 flex h-[18rem] sm:h-[20rem] border-b border-border/50 rounded-b-xl w-full flex-col gap-3 sm:gap-4 bg-background/95 backdrop-blur-sm p-3 sm:p-4 md:p-6 lg:p-8',
           'sm:top-[69px] sm:h-[calc(100vh-69px)]',
           isOpen ? 'flex' : 'hidden'
         )}

@@ -23,52 +23,53 @@ export const Currently = () => {
             {/* Text Content Section */}
             <div className={isMediaRight ? '' : 'sm:col-span-1 sm:order-2'}>
               <ViewAnimation
-                className="flex h-full flex-col items-start justify-between gap-4 p-8"
+                className="flex h-full flex-col items-start justify-between gap-3 sm:gap-4 p-4 sm:p-6 lg:p-8"
                 initial={{ opacity: 0, translateY: -8 }}
                 whileInView={{ opacity: 1, translateY: 0 }}
               >
                 <div className="flex flex-col gap-2">
-                  <Badge variant={project.type === 'Personal Project' ? 'success' : 'info'} appearance="light" className="text-primary max-w-fit rounded-sm">{project.type || `Project ${index + 1}`}</Badge>
+                  <Badge variant={project.type === 'Personal Project' ? 'success' : 'info'} appearance="light" className="text-primary max-w-fit rounded-sm text-xs sm:text-sm">{project.type || `Project ${index + 1}`}</Badge>
                   <div className="prose-ui">
-                    <h2 className="text-primary">{project.name}</h2>
-                    <h5 className="text-muted-foreground">{project.description}</h5>
+                    <h2 className="text-primary text-lg sm:text-xl lg:text-2xl">{project.name}</h2>
+                    <h5 className="text-muted-foreground text-sm sm:text-base">{project.description}</h5>
                   </div>
                   <AvatarGroup>
-                    {project.tech?.map((tech) => (
+                    {project.tech?.slice(0, 6).map((tech) => (
                       <AvatarGroupItem key={tech.name}>
                         <Link href={tech.url} target="_blank" rel="noreferrer noopener">
-                          <Avatar className="size-12 rounded-full overflow-hidden border-4 border-background">
+                          <Avatar className="size-10 sm:size-12 rounded-full overflow-hidden border-2 sm:border-4 border-background">
                             <AvatarImage src={`https://img.logo.dev/${tech.domain}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_TOKEN}&size=175&format=png&retina=true`} />
-                            <AvatarFallback>{tech.name.charAt(0)}</AvatarFallback>
+                            <AvatarFallback className="text-xs">{tech.name.charAt(0)}</AvatarFallback>
                           </Avatar>
                         </Link>
                         <AvatarGroupTooltip className="flex flex-col gap-0.5 text-center">
-                          <span className="text-sm font-semibold">{tech.name}</span>
+                          <span className="text-xs sm:text-sm font-semibold">{tech.name}</span>
                         </AvatarGroupTooltip>
                       </AvatarGroupItem>
                     ))}
                   </AvatarGroup>
                 </div>
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 w-full">
                 {project.githubUrl && (
-                  <GithubButton 
+                  <GithubButton
                   initialStars={0}
                   targetStars={100}
                   label="Github Stars"
-                  roundStars={true} 
+                  roundStars={true}
                   repoUrl={project.githubUrl}
-                  variant="outline" 
+                  variant="outline"
+                  size="sm"
                   />
                 )}
                 {project.url && (
-                <Button asChild variant="outline" className="gap-2 font-mono">
+                <Button asChild variant="outline" size="sm" className="gap-1.5 sm:gap-2 font-mono w-full sm:w-auto">
                   <a
                     href={project.url}
                     target="_blank"
                     rel="noreferrer noopener"
                   >
                     View Project
-                    <ArrowUpRightIcon size={16} />
+                    <ArrowUpRightIcon size={14} className="sm:w-4 sm:h-4" />
                   </a>
                 </Button>
                 )}
@@ -82,13 +83,13 @@ export const Currently = () => {
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
                 delay={0.4}
-                className={`relative ${isMediaRight ? 'pt-8 pl-8' : 'pt-8 pr-8'}`}
+                className={`relative ${isMediaRight ? 'pt-6 sm:pt-8 pl-4 sm:pl-6 lg:pl-8' : 'pt-6 sm:pt-8 pr-4 sm:pr-6 lg:pr-8'}`}
               >
                 <div className={`dashed-line-${isMediaRight ? 'top' : 'top'}`} />
                 <div className={`dashed-line-${isMediaRight ? 'left' : 'right'}`} />
                 {project.mediaType === 'video' ? (
                   <Video
-                    className="w-full aspect-video rounded-tl-2xl border-t border-l"
+                    className="w-full aspect-video rounded-tl-xl sm:rounded-tl-2xl border-t border-l"
                     src={project.mediaUrl as string}
                     autoPlay={true}
                     loop={true}
@@ -102,7 +103,7 @@ export const Currently = () => {
                     alt={project.name}
                     width={800}
                     height={450}
-                    className="w-full aspect-video object-cover rounded-tl-2xl border-t border-l"
+                    className="w-full aspect-video object-cover rounded-tl-xl sm:rounded-tl-2xl border-t border-l"
                   />
                 )}
               </ViewAnimation>

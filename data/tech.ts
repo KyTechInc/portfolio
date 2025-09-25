@@ -25,6 +25,14 @@ export const tech = {
             imageUrl: 'tailwindcss.com',
         },
         {
+            title: 'Better-Auth',
+            description: 'Better-Auth is a simple, secure, and modern authentication solution for your next project.',
+            url: 'https://better-auth.com',
+            category: 'Development',
+            featured: true,
+            imageUrl: 'better-auth.com',
+        },
+        {
             title: 'Vercel',
             description: 'A platform for building modern websites and web applications.',
             url: 'https://vercel.com',
