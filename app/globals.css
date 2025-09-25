@@ -190,6 +190,21 @@
   }
 }
  
+@layer utilities {
+  .animate-marquee {
+    animation: marquee var(--duration, 40s) linear infinite;
+  }
+  .animate-marquee-vertical {
+    animation: marquee-vertical var(--duration, 40s) linear infinite;
+  }
+  .animate-marquee-reverse {
+    animation: marquee var(--duration, 40s) linear infinite reverse;
+  }
+  .animate-marquee-vertical-reverse {
+    animation: marquee-vertical var(--duration, 40s) linear infinite reverse;
+  }
+}
+ 
 /** Global Styles **/
 @layer base {
   * {

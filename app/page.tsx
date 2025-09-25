@@ -1,5 +1,7 @@
 import { Banner } from "@/components/banner";
+import BlogSection from "@/components/blog-section";
 import { Currently } from "@/components/current";
+import GithubActivity from "@/components/github-activity";
 import { Hero } from "@/components/hero";
 
 export default function Home() {
@@ -8,6 +10,8 @@ export default function Home() {
       <Hero />
       <Currently />
       <Banner />
+      <BlogSection />
+      <GithubActivity />
     </>
   );
 }
