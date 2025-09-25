@@ -18,7 +18,7 @@ export const MobileMenu = () => {
       </Button>
       <div
         className={cn(
-          'fixed top-[53px] right-0 left-0 flex h-[calc(100vh-53px)] w-full flex-col gap-4 bg-backdrop p-4 md:p-8',
+          'fixed top-[53px] right-0 left-0 flex h-[20rem] border-b border-border/50 rounded-b-xl w-full flex-col gap-4 bg-background/95 backdrop-blur-sm p-4 md:p-8',
           'sm:top-[69px] sm:h-[calc(100vh-69px)]',
           isOpen ? 'flex' : 'hidden'
         )}
@@ -33,9 +33,9 @@ export const MobileMenu = () => {
             {link.label}
           </Link>
         ))}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-center gap-4">
           <ThemeSwitcher />
-          <Button variant="outline" asChild onClick={() => setIsOpen(false)}>
+          <Button className="w-full" variant="primary" asChild onClick={() => setIsOpen(false)}>
             <Link href="/contact">Get in touch</Link>
           </Button>
         </div>
