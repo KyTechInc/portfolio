@@ -66,7 +66,4 @@ export function ArticleLayout({
   )
 }
 
-// Backward-compat alias for existing imports
-export { ArticleLayout as ArticleLAyout }
-
  
