@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/base-button';
 import { ViewAnimation } from '@/providers/view-animation';
 import { ArrowUpRightIcon } from 'lucide-react';
 import { Video } from '@/components/ui/video';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/base-avatar';
-import Link from 'next/link';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
 import { projects } from '@/data/projects';
-import { AvatarGroup, AvatarGroupItem, AvatarGroupTooltip } from '@/components/ui/avatar-group';
+import { AvatarGroup, AvatarGroupTooltip } from '@/components/animate-ui/components/animate/avatar-group';
 import { Badge } from './ui/base-badge';
 import { GithubButton } from './ui/github-button';
+import Link from 'next/link';
 
 export const Currently = () => {
   return (
@@ -35,17 +35,15 @@ export const Currently = () => {
                   </div>
                   <AvatarGroup>
                     {project.tech?.slice(0, 6).map((tech) => (
-                      <AvatarGroupItem key={tech.name}>
-                        <Link href={tech.url} target="_blank" rel="noreferrer noopener">
-                          <Avatar className="size-10 sm:size-12 rounded-full overflow-hidden border-2 sm:border-4 border-background">
-                            <AvatarImage src={`https://img.logo.dev/${tech.domain}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_TOKEN}&size=175&format=png&retina=true`} />
-                            <AvatarFallback className="text-xs">{tech.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                        </Link>
+                      <Link key={tech.name} href={tech.url} target="_blank" rel="noreferrer noopener">
+                      <Avatar key={tech.name} className="size-10 sm:size-12 border-3 border-background rounded-full overflow-hidden">
+                        <AvatarImage src={`https://img.logo.dev/${tech.domain}?token=${process.env.NEXT_PUBLIC_LOGO_DEV_TOKEN}&size=175&format=png&retina=true`} />
+                        <AvatarFallback className="text-xs">{tech.name.charAt(0)}</AvatarFallback>
                         <AvatarGroupTooltip className="flex flex-col gap-0.5 text-center">
                           <span className="text-xs sm:text-sm font-semibold">{tech.name}</span>
                         </AvatarGroupTooltip>
-                      </AvatarGroupItem>
+                      </Avatar>
+                      </Link>
                     ))}
                   </AvatarGroup>
                 </div>

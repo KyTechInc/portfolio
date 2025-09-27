@@ -53,16 +53,13 @@ Create a `.env.local` file in the root directory with the following variables:
 ```env
 # Site Configuration
 NEXT_PUBLIC_SITE_URL=https://yourdomain.com
-AUTHOR_NAME=Kyle McCracken
+AUTHOR_NAME=Your Name
 AUTHOR_EMAIL=your-email@example.com
-
-# SEO and Analytics
-GOOGLE_SITE_VERIFICATION=your-google-site-verification-code
-YANDEX_VERIFICATION=your-yandex-verification-code
-YAHOO_SITE_VERIFICATION=your-yahoo-site-verification-code
 TWITTER_HANDLE=@yourusername
 
 # External Services
+
+# Logo.dev
 NEXT_PUBLIC_LOGO_DEV_TOKEN=your-logo-dev-token
 
 ```
