@@ -55,14 +55,14 @@ function Article({ article }: { article: ArticleWithSlug }) {
                     {article.date}
                   </span>
                   <span
-                    className="inline-flex size-6 sm:size-7 items-center justify-center rounded-full border border-border bg-backdrop text-xs font-medium text-foreground"
+                    className="inline-flex size-10 sm:size-10 items-center justify-center rounded-full border border-border bg-backdrop text-xs font-medium text-foreground"
                     aria-hidden={true}
                   >
                     <Image
                       src={"/headshot.webp"}
                       alt={article.author}
-                      width={50}
-                      height={50}
+                      width={100}
+                      height={100}
                       className="size-full rounded-full"
                       aria-hidden={true}
                     />
@@ -110,13 +110,13 @@ export default async function ArticlesIndex() {
           __html: JSON.stringify(structuredData)
         }}
       />
-      <Section className="pt-6 sm:pt-8">
+      <Section className="pt-6 sm:pt-8 p-8">
         <Container className="flex flex-col items-center gap-3 sm:gap-4 mx-auto w-full">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-mono">Blog</h1>
-          <p className="text-sm sm:text-base text-muted-foreground text-center max-w-2xl px-4">All of my long-form thoughts on programming, leadership, product design, and more, collected in chronological order.</p>
+          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl px-4 pt-6">All of my long-form thoughts on programming, leadership, product design, and more, collected in chronological order.</p>
           <div className="w-full">
-            <dl className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 w-full">
-              <Suspense fallback={<div className="col-span-full text-center py-8">Loading...</div>}>
+            <dl className="grid grid-cols-1 gap-8 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3 w-full pt-4">
+              <Suspense fallback={<div className="col-span-full text-center p-8">Loading...</div>}>
                 {articles.map((article) => (
                   <Article key={article.slug} article={article} />
                 ))}
