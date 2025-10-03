@@ -32,7 +32,7 @@ function Article({ article }: { article: ArticleWithSlug }) {
                     alt={article.coverImage}
                     width={50}
                     height={50}
-                    className="size-6 sm:size-8"
+                    className="size-6 sm:size-8 dark:bg-primary"
                     aria-hidden={true}
                   />
                 </span>
