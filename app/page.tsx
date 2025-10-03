@@ -6,6 +6,7 @@ import { Currently } from "@/components/current";
 import GithubActivity from "@/components/github-activity";
 import { Hero } from "@/components/hero";
 import { generateMetadata, generateStructuredData, SITE_CONFIG } from "@/lib/metadata";
+import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = generateMetadata({
   title: `${SITE_CONFIG.name} - Full Stack Developer & Portfolio`,
@@ -42,6 +43,7 @@ export default function Home() {
       <Banner />
       <BlogSection />
       <GithubActivity />
+      <Footer />
     </>
   );
 }

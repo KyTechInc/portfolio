@@ -1,0 +1,129 @@
+
+import { Code } from '@/components/code-editor'
+import ide from './blog-1.jpg'
+import { ArticleLayout } from '@/components/ArticleLayout'
+import Image from 'next/image'
+export const article = {
+  title: "LLMs Aren't Magic—Here's How They Actually Work",
+  date: "2025-10-02",
+  author: "Kyle McCracken",
+  description: "Learn how LLMs actually work, and how to architect your applications to use them effectively.",
+  coverImage: ide,
+  slug: 'llms-are-not-magic',
+  coverImagePath: ide,
+  icon: 'openai.com'
+}
+
+
+export const metadata = {
+  title: article.title,
+  description: article.description,
+}
+
+export default (props) => <ArticleLayout article={article} {...props} />
+
+<Image width={3840} height={2160} src={ide} alt="IDE" />
+
+> Most developers treat LLMs like black boxes. You send a prompt, you get a response, and somewhere in between, "AI magic" happens. That's a problem—because if you don't understand how these models work, you'll build fragile, expensive, and unpredictable applications.
+
+
+Here's the truth: LLMs aren't magic. They're probability machines. Understanding this changes everything about how you architect AI apps.
+
+## What Actually Happens When You Call an LLM
+
+When you send a prompt to GPT-5 or Claude 4.5 Sonnet, here's what happens under the hood:
+
+1. **Tokenization**: Your text gets split into tokens—subword units that the model understands. "Hello world" might become ["Hello", " world"] or ["Hel", "lo", " wor", "ld"] depending on the tokenizer.
+2. **Embedding**: Each token gets converted into a high-dimensional vector—a list of numbers that represents its meaning in the model's learned space.
+3. **Probability calculation**: The model processes these vectors through billions of parameters (GPT-5 has over 1 trillion, DeepSeek V3.1 has 671 billion) to predict what token should come next. It outputs a probability distribution over all possible tokens.
+4. **Sampling**: The model picks the next token based on those probabilities—not deterministically, but probabilistically. Temperature and top-p control how "creative" vs. "focused" this sampling is.
+5. **Repeat**: The model adds the new token to the context and repeats the process until it generates a stop token or hits a length limit.
+
+That's it. No reasoning. No understanding. Just very sophisticated pattern matching and next-token prediction.
+
+## Why "Predicting the Next Token" Matters
+
+This probabilistic nature has massive implications for how you build:
+
+- **You can't trust outputs blindly.** The model is optimized to generate plausible text, not factual text. It doesn't "know" things—it predicts what words are likely to follow based on training data. This is why hallucinations happen: the model generates text that sounds right but is wrong.
+- **Outputs aren't deterministic.** Even at temperature 0 (the most "focused" setting), you'll get variation. Why? Sampling algorithms, model updates, floating-point precision, and non-deterministic GPU operations all introduce randomness. Design your architecture to handle this.
+- **Context is everything.** LLMs have no memory between requests. Every call is stateless. If you want the model to "remember" something, you must include it in the prompt every time. This is why context windows matter—and why they fill up fast.
+
+## Temperature, Top-P, and Why Your Prompts Feel Inconsistent
+
+Two parameters control how the model samples tokens:
+**Temperature (0.0 to 2.0):** Controls randomness. Low temperature (0.0-0.3) makes the model pick the most likely token almost every time—good for factual tasks, classification, and structured output. High temperature (0.7-2.0) makes it sample from a wider distribution—good for creative writing, brainstorming, and exploration.
+**Top-P (0.0 to 1.0):** Also called nucleus sampling. Instead of considering all tokens, the model only samples from the top tokens whose cumulative probability adds up to P. A top-p of 0.9 means "only consider tokens that make up the top 90% of probability mass." This cuts off the long tail of unlikely tokens.
+Most models default to temperature 1.0 and top-p 0.9. If your outputs feel inconsistent, try lowering temperature. If they feel repetitive or boring, raise it.
+
+## Base Models vs. Instruction-Tuned Models
+
+Not all LLMs are created equal. There are two main types:
+
+- **Base models** are trained purely on next-token prediction. They complete text but don't follow instructions well. If you prompt a base model with "Write a function to sort an array," it might just continue with more text about sorting instead of writing code.
+- **Instruction-tuned models** (like GPT-5, Claude 4.5 Sonnet, Gemini 2.5 Pro) are fine-tuned on instruction-following datasets. They're trained to respond to prompts like a helpful assistant. This is what you want for almost every application.
+
+Some models are also **RLHF-tuned** (Reinforcement Learning from Human Feedback), which means they've been trained to prefer responses that humans rate as helpful, harmless, and honest. This reduces harmful outputs but can also make models overly cautious or verbose.
+
+## Why LLMs Hallucinate (And What That Means for Your Architecture)
+
+Hallucinations aren't bugs—they're features of how LLMs work. The model is trained to predict plausible text, not accurate text. If it doesn't know the answer, it will still generate something that sounds right.
+
+> This happens because:
+
+- The model has no concept of "truth"—only patterns in training data
+- It's rewarded for fluency and coherence, not factual accuracy
+- It can't say "I don't know" unless explicitly trained to do so
+
+> How to handle this in production:
+
+1. **Verify outputs.** Don't trust the model blindly. Use retrieval-augmented generation (RAG) to ground responses in real data. Cross-check facts against authoritative sources.
+2. **Use structured output.** If you need JSON, use the model's JSON mode or function calling. This constrains the output format and reduces hallucinations.
+3. **Add guardrails.** Use a second LLM call to verify the first one. Ask: "Is this response factually accurate based on the provided context?"
+4. **Prompt for honesty.** Add instructions like "If you don't know, say 'I don't know' instead of guessing."
+
+## Practical Implications: When to Trust an LLM, When to Verify
+
+Here's a simple framework:
+
+**Trust the LLM for:**
+- Text generation (summaries, rewrites, creative writing)
+- Classification (sentiment, intent, category)
+- Extraction (pulling structured data from unstructured text)
+- Code generation (with tests and review)
+
+**Verify the LLM for:**
+- Factual claims (dates, names, statistics)
+- Mathematical calculations (use a calculator tool instead)
+- Legal or medical advice (always defer to experts)
+- High-stakes decisions (hiring, finance, safety)
+
+**Never trust the LLM for:**
+- Security-critical logic (authentication, authorization)
+- Deterministic workflows (use code, not prompts)
+- Real-time data (models are trained on old data—use APIs instead)
+
+## The Model Landscape in October 2025
+
+This list will surely be updated by the time I hit publish, nevertheless, here are the "current models":
+
+- **GPT-5 (OpenAI)**: Best for complex reasoning and coding tasks
+- **Claude 4.5 Sonnet (Anthropic)**: Excellent for long-context tasks and nuanced writing
+- **Gemini 2.5 Pro (Google)**: Strong multimodal capabilities and structured output
+- **DeepSeek V3.1 (DeepSeek)**: Competitive performance at lower cost, great for self-hosting
+- **Grok 4 (xAI)**: Fast inference and real-time data access
+
+Each has trade-offs in speed, cost, and capability. We'll cover model selection in depth in Part 3.
+
+## Conclusion
+
+LLMs are probability machines, not reasoning engines. They predict the next token based on patterns in training data. Understanding this changes how you build:
+
+- Design for uncertainty, not determinism
+- Verify outputs, especially for factual claims
+- Use structured output and guardrails to reduce hallucinations
+- Choose the right model for the task (more on this in Part 3)
+
+The best AI apps treat LLMs as powerful but imperfect tools—not magic oracles. Build with that mindset, and you'll ship faster, cheaper, and more reliably.
+
+Next in this series: How tokens and context windows affect cost, speed, and accuracy—and how to optimize for all three.
