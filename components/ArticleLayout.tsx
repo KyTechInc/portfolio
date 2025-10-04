@@ -39,7 +39,7 @@ function ArticleContent({
                 <span className="h-4 w-0.5 rounded-full bg-muted" />
                 <span className="ml-3 font-mono">{formatDate(article.date)}</span>
               </time>
-              <div className="prose-ui">{children as string}</div>
+              <div className="">{children as string}</div>
             </article>
           </div>
         </div>

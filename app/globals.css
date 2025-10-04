@@ -6,7 +6,7 @@
 @custom-variant dark (&:is(.dark *));
  
 :root {
-  --p-body-color-bg: oklch(0.1450 0 0);
+  --p-body-color-bg: oklch(0.9848 0.0013 106.4233);
   --p-border-radius: 8px;
   --background: oklch(0.9848 0.0013 106.4233);
   --foreground: oklch(0.2178 0 0);

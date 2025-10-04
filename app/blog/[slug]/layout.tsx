@@ -1,5 +1,5 @@
 import { Section } from "@/components/Section"
-import { Suspense } from "react"
+
 
 export default function ArticleLayout({
   children,

@@ -1,0 +1,357 @@
+
+import { Code } from '@/components/code-editor'
+import ide from './blog-1.jpg'
+import { ArticleLayout } from '@/components/ArticleLayout'
+import Image from 'next/image'
+import TokenizationFlow from '@/components/blog/tokenizer'
+
+
+export const article = {
+title: "Tokens, Context Windows, and Why Your AI App Is Slow",
+description: "Token management is the difference between a prototype and a production app. Learn how to optimize for cost, speed, and accuracy.",
+date: "2025-10-02",
+author: "Kyle McCracken",
+tags: ["AI", "LLMs", "TypeScript", "Performance", "Vercel AI SDK"],
+slug: "why-your-ai-app-is-slow",
+coverImage: ide,
+coverImagePath: "https://media.kytech.ca/blog/blog-1.jpg",
+icon: "openai.com"
+}
+
+export const metadata = {
+  title: article.title,
+  description: article.description,
+}
+
+export default (props) => <ArticleLayout article={article} {...props} />
+
+<Image width={3840} height={2160} src={ide} alt="IDE" />
+
+# Tokens, Context Windows, and Why Your AI App Is Slow
+
+Your AI app is slow because you're sending too many tokens.
+
+Every prompt, every response, every message in the context window—it all costs money and time. Most developers don't realize this until they get their first production bill or their users complain about latency.
+
+Here's the truth: token management is the difference between a prototype and a production app. If you don't understand how tokens work, you'll waste money and deliver a poor user experience.
+
+## What Tokens Actually Are
+
+Tokens aren't words. They aren't characters. They're **subword units** that the model uses to process text.
+
+When you send "Hello, world!" to an LLM, the tokenizer might split it into:
+<Code
+    code={`
+["Hello", ",", " world", "!"]
+`}
+  language="json"
+  lineNumbers={false}
+  
+/>
+
+Or depending on the model:
+
+<Code
+    code={`
+["Hel", "lo", ",", " wor", "ld", "!"]
+`}
+  language="json"
+  lineNumbers={false}
+/>
+
+<TokenizationFlow />
+
+The exact tokenization depends on the model's vocabulary. GPT models use a tokenizer called `tiktoken`, which has about 100,000 tokens in its vocabulary. Claude uses a different tokenizer with slightly different splits.
+
+**Rule of thumb:** In English, 1 token ≈ 0.75 words. But this varies wildly:
+
+- Common words like "the" or "and" are usually single tokens
+- Rare words or technical terms might be split into multiple tokens
+- Code, punctuation, and non-English text can be token-heavy
+- Whitespace and newlines count as tokens
+
+<Callout type="tip">
+Use the Vercel AI SDK's `countTokens` utility or OpenAI's `tiktoken` library to estimate token usage before sending requests.
+</Callout>
+
+## How to Estimate Token Count (And Why It Matters for Cost)
+
+Every LLM provider charges per token—both input and output. Here's the pricing as of October 2025:
+<Frame caption="Pricing comparison for frontier models (per 1M tokens)">
+| Model | Input Cost | Output Cost | Speed |
+|-------|-----------|-------------|-------|
+| GPT-5 (high) | $5.00 | $15.00 | Slow |
+| Claude 4.5 Sonnet | $3.00 | $15.00 | Medium |
+| Gemini 2.5 Pro | $1.25 | $5.00 | Fast |
+| DeepSeek V3.1 | $0.27 | $1.10 | Fast |
+| GPT-5 Codex | $2.50 | $10.00 | Medium |
+</Frame>
+
+If you're building a chatbot that sends 10,000 messages per day with an average of 1,000 input tokens and 500 output tokens per message, here's what it costs per month:
+
+**With GPT-5:**
+- Input: 10,000 × 1,000 × 30 = 300M tokens → $1,500
+- Output: 10,000 × 500 × 30 = 150M tokens → $2,250
+- **Total: $3,750/month**
+
+**With DeepSeek V3.1:**
+- Input: 300M tokens → $81
+- Output: 150M tokens → $165
+- **Total: $246/month**
+
+That's a 15x difference. Model selection matters.
+
+## Context Windows: What Fits, What Doesn't, and the Performance Cliff
+
+A context window is the maximum number of tokens the model can process in a single request—including your prompt, the conversation history, and the response.
+
+Current context window sizes:
+
+- **GPT-5**: 128,000 tokens
+- **Claude 4.5 Sonnet**: 200,000 tokens
+- **Gemini 2.5 Pro**: 1,000,000 tokens
+- **DeepSeek V3.1**: 128,000 tokens
+
+Sounds like a lot, right? It's not.
+
+A typical conversation with 10 back-and-forth messages can easily hit 5,000-10,000 tokens. Add a few documents for context, and you're at 50,000 tokens. Include a large codebase or knowledge base, and you'll hit the limit fast.
+
+<Callout type="warning">
+Filling the context window doesn't just cost more—it degrades performance. This is called **context rot** or **lost-in-the-middle** effect.
+</Callout>
+
+## The Hidden Cost of Large Contexts (Latency and Accuracy Degradation)
+
+The bigger your context, the slower and less accurate the model becomes.
+
+**Latency:** LLMs process tokens sequentially. A 100,000-token context takes significantly longer to process than a 1,000-token context. Expect 2-5 seconds of latency just for the model to "read" a large context before it starts generating.
+
+**Accuracy degradation:** Research shows that LLMs struggle to use information buried in the middle of long contexts. They're better at using information at the beginning and end. This is the "lost-in-the-middle" problem.
+
+If you're building a RAG (Retrieval-Augmented Generation) app and stuffing 50 documents into the context, the model might ignore most of them.
+
+**The fix:** Don't send everything. Send only what's relevant.
+
+## Strategies: Summarization, RAG, Sliding Windows, Structured Extraction
+
+Here are five proven strategies to manage tokens and context efficiently:
+
+### 1. Summarization
+
+If you have a long document or conversation, summarize it before sending it to the main model.
+
+<Code
+    code={`
+import { generateText } from 'ai';
+
+// Summarize a long document with a fast, cheap model
+const summary = await generateText({
+  model: 'gpt-4o-mini',
+  prompt: \`Summarize this document in 200 words:\n\n\${longDocument}\`,
+});
+
+// Use the summary in the main prompt
+const response = await generateText({
+  model: 'gpt-5',
+  prompt: \`Based on this summary: \${summary}\n\nAnswer: \${userQuestion}\`,
+});
+`}
+  language="typescript"
+  lineNumbers={true}
+/>
+
+This reduces token usage by 10-50x while preserving the key information.
+
+### 2. Retrieval-Augmented Generation (RAG)
+
+Instead of sending your entire knowledge base, retrieve only the most relevant chunks.
+
+<Code
+    code={`
+import { embed } from 'ai';
+import { searchVectorDB } from './vector-db';
+
+// Generate an embedding for the user's question
+const questionEmbedding = await embed({
+  model: 'text-embedding-3-small',
+  value: userQuestion,
+});
+
+// Retrieve the top 5 most relevant chunks
+const relevantChunks = await searchVectorDB(questionEmbedding, { limit: 5 });
+
+// Inject only the relevant context
+const response = await generateText({
+  model: 'claude-4.5-sonnet',
+  prompt: \`Context:\n\${relevantChunks.join('\\n\\n')}\n\nQuestion: \${userQuestion}\`,
+});
+`}
+  language="typescript"
+  lineNumbers={true}
+/>
+
+This keeps your context small and focused.
+
+### 3. Sliding Windows
+
+For long conversations, keep only the most recent messages in the context.
+
+<Code
+    code={`
+const MAX_MESSAGES = 10;
+
+// Keep only the last 10 messages
+const recentMessages = conversationHistory.slice(-MAX_MESSAGES);
+
+const response = await generateText({
+  model: 'gpt-5',
+  messages: recentMessages,
+});
+`}
+  language="typescript"
+  lineNumbers={true}
+/>
+
+You can also summarize older messages and keep the summary in context.
+
+### 4. Structured Extraction
+
+If you're extracting data from a document, don't send the entire document. Send only the relevant section.
+
+<Code
+    code={`
+import { generateObject } from 'ai';
+import { z } from 'zod';
+
+// Extract structured data from a specific section
+const extracted = await generateObject({
+  model: 'gemini-2.5-pro',
+  schema: z.object({
+    name: z.string(),
+    email: z.string(),
+    company: z.string(),
+  }),
+  prompt: \`Extract contact information from this text:\n\n\${relevantSection}\`,
+});
+`}
+  language="typescript"
+  lineNumbers={true}
+/>
+
+Use JSON mode or function calling to constrain the output format and reduce hallucinations.
+
+### 5. Prompt Caching
+
+Some providers (like Anthropic and Cloudflare AI Gateway) support prompt caching. If you're sending the same context repeatedly, the provider caches it and charges you less for subsequent requests.
+
+<Code
+    code={`
+// With Anthropic's prompt caching
+const response = await generateText({
+  model: 'claude-4.5-sonnet',
+  messages: [
+    {
+      role: 'system',
+      content: largeSystemPrompt, // This gets cached
+      cache_control: { type: 'ephemeral' },
+    },
+    {
+      role: 'user',
+      content: userQuestion,
+    },
+  ],
+});
+`}
+  language="typescript"
+  lineNumbers={true}
+/>
+
+Cloudflare AI Gateway caches responses automatically if you send the same prompt twice.
+
+## Using Vercel AI SDK's Token Counting Utilities
+
+The Vercel AI SDK provides utilities to count tokens before sending requests:
+
+<Code
+    code={`
+import { countTokens } from 'ai';
+
+const { tokens } = await countTokens({
+  model: 'gpt-5',
+  messages: conversationHistory,
+});
+
+console.log(\`This request will use \${tokens} tokens\`);
+
+// Estimate cost
+const inputCost = (tokens / 1_000_000) * 5.0; // $5 per 1M tokens
+console.log(\`Estimated cost: \$\${inputCost.toFixed(4)}\`);
+`}
+  language="typescript"
+  lineNumbers={true}
+/>
+
+Use this to:
+- Warn users when they're approaching the context limit
+- Truncate or summarize context dynamically
+- Track token usage per user or session
+
+## AI Gateway's Role in Monitoring and Caching Token Usage
+
+Cloudflare AI Gateway sits between your app and the LLM provider. It provides:
+
+**Caching:** If you send the same prompt twice, AI Gateway returns the cached response instantly—no LLM call, no cost.
+
+**Rate limiting:** Prevent abuse by limiting requests per user or IP.
+
+**Analytics:** Track token usage, latency, and cost across all your LLM calls.
+
+**Fallbacks:** If one provider is down, route requests to a backup model.
+
+Here's how to set it up with Vercel AI SDK:
+<Code
+    code={`
+import { createOpenAI } from '@ai-sdk/openai';
+
+const openai = createOpenAI({
+  baseURL: 'https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/openai',
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+const response = await generateText({
+  model: openai('gpt-5'),
+  prompt: userQuestion,
+});
+`}
+  language="typescript"
+  filename="ai-gateway.ts"
+  lineNumbers={true}
+/>
+
+Now all your requests go through AI Gateway, and you get caching, monitoring, and rate limiting for free.
+
+<Callout type="info">
+AI Gateway also supports other providers like Anthropic, Google, and DeepSeek. You can route requests to different models based on cost, latency, or availability.
+</Callout>
+
+## Conclusion
+
+Token management is the difference between a prototype and a production app. Here's what to remember:
+
+- Tokens are subword units, not words—estimate before sending
+- Context windows have limits, and filling them degrades performance
+- Use summarization, RAG, and sliding windows to keep context small
+- Prompt caching can reduce costs by 50-90% for repeated requests
+- AI Gateway provides caching, monitoring, and rate limiting out of the box
+
+Optimize for cost, speed, and accuracy—not just functionality. Your users (and your budget) will thank you.
+
+**Next in this series:** How to choose the right model for each task—and when to switch.
+
+---
+
+**Further reading:**
+- [Vercel AI SDK documentation](https://sdk.vercel.ai/docs)
+- [Cloudflare AI Gateway](https://developers.cloudflare.com/ai-gateway/)
+- [OpenAI tokenizer (tiktoken)](https://github.com/openai/tiktoken)
+
