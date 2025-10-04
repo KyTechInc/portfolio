@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Providers } from "./providers";
 import { Header } from "@/components/header";
 import { SITE_CONFIG, generateMetadata, generateStructuredData } from "@/lib/metadata";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -49,12 +50,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
-        <script
+        <Script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify([structuredData, personData])
           }}
         />
+        <Script defer data-domain="kylemccracken.com" src="https://plausible.io/js/script.js" />
       </head>
       <body className={cn('text-base antialiased bg-background text-foreground font-geist', geistSans.className)}>
         <Providers>
