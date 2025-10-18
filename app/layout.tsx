@@ -64,7 +64,7 @@ export default function RootLayout({
         <OpenPanelComponent
         clientId="b05d7fab-3fe3-49fb-b8d1-eef85371fd41"
         trackScreenViews={true}
-        cdnUrl="http://observtools-openpanel-46fc73-5-161-176-124.traefik.me"
+        cdnUrl="https://observtools-openpanel-46fc73-5-161-176-124.traefik.me"
         trackAttributes={true}
         trackOutgoingLinks={true}
         // If you have a user id, you can pass it here to identify the user
