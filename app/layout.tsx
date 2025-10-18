@@ -7,6 +7,7 @@ import { Providers } from "./providers";
 import { Header } from "@/components/header";
 import { SITE_CONFIG, generateMetadata, generateStructuredData } from "@/lib/metadata";
 import Script from "next/script";
+import { OpenPanelComponent } from '@openpanel/nextjs';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,6 +61,15 @@ export default function RootLayout({
       </head>
       <body className={cn('text-base antialiased bg-background text-foreground font-geist', geistSans.className)}>
         <Providers>
+        <OpenPanelComponent
+        clientId="b05d7fab-3fe3-49fb-b8d1-eef85371fd41"
+        trackScreenViews={true}
+        cdnUrl="http://observtools-openpanel-46fc73-5-161-176-124.traefik.me"
+        trackAttributes={true}
+        trackOutgoingLinks={true}
+        // If you have a user id, you can pass it here to identify the user
+        // profileId={'123'}
+      />
         <Header />
         <div className="container mx-auto h-[52px] sm:h-16 sm:border-x" />
             <main className="divide-y sm:border-b">
